@@ -18,6 +18,7 @@ dist/
 .eslintcache
 examples/speech_to_text_microphone_input/*.wav
 examples/speech_to_text_microphone_input/*.txt
+examples/speech_to_text_microphone_input/screenshots
 lib/*.js
 conversation/*.js
 dialog/*.js

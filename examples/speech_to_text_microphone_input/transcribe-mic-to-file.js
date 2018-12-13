@@ -6,10 +6,8 @@ var mic = require('mic');
 var wav = require('wav');
 
 var speechToText = new SpeechToText({
-  // if left unspecified here, the SDK will fall back to the SPEECH_TO_TEXT_USERNAME and SPEECH_TO_TEXT_PASSWORD
-  // environment properties, and then Bluemix's VCAP_SERVICES environment property
-  // username: 'INSERT YOUR USERNAME FOR THE SERVICE HERE',
-  // password: 'INSERT YOUR PASSWORD FOR THE SERVICE HERE'
+  iam_apikey: 'BQempMSmncsRJBInEq_uOjs-i2q-q0HH7TQc2WiLv-9n',
+  url: 'https://gateway-tok.watsonplatform.net/speech-to-text/api'
 });
 
 var micInstance = mic({
@@ -35,6 +33,12 @@ wavStream.pipe(recognizeStream);
 
 recognizeStream.pipe(fs.createWriteStream('./transcription.txt'));
 
+
+micInputStream.on('error', function(err) {
+  cosole.log("Error in Input Stream: " + err);
+});
+
+
 // note:
 // If you just kill the process with control-c, the .wav file will have an incorrect header, and any in-flight
 // transcription will be lost.
@@ -43,6 +47,10 @@ recognizeStream.pipe(fs.createWriteStream('./transcription.txt'));
 console.log('Recording, press any key to exit');
 process.stdin.setRawMode(true);
 // process.stdin.resume();
+
+
+
+  
 process.stdin.once('data', function() {
   console.log('Cleaning up and exiting...');
   process.stdin.setRawMode(false);
