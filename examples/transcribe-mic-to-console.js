@@ -6,6 +6,29 @@ var wav = require('wav');
 var util = require('./Util.js');
 
 
+var TextToSpeechV1 = require('watson-developer-cloud/text-to-speech/v1');
+var fs = require('fs');
+var Speaker = require('speaker');
+var wav = require('wav');
+var Readable = require('stream').Readable;
+
+var textToSpeech = new TextToSpeechV1({
+    iam_apikey: 'zu1Pj8wHVbclu-qGne4TucyZSv7HYzpQ96JP7lRtyfMt',
+    url: 'https://gateway-tok.watsonplatform.net/text-to-speech/api'
+});
+
+
+var reader = new wav.Reader();
+
+// the "format" event gets emitted at the end of the WAVE header
+reader.on('format', function(format) {
+  // the WAVE header is stripped from the output of the reader
+  reader.pipe(new Speaker(format));
+});
+
+
+
+
 var speechToText = new SpeechToText({
   iam_apikey: 'BQempMSmncsRJBInEq_uOjs-i2q-q0HH7TQc2WiLv-9n',
   url: 'https://gateway-tok.watsonplatform.net/speech-to-text/api'
@@ -41,10 +64,14 @@ recognizeStream.on('data',function (data) {
 
   if(data.includes('automation test')) {
 
+
+
     //Now we can run a script and invoke a callback when complete, e.g.
     util.runScript('/Users/ericliu/Documents/StellaAuto/test_PARTS_US.js', function (err) {
-        if (err) throw err;
-        console.log('finished running some-script.js');
+        if (err) {
+          console.log('finished running some-script.js');
+          throw err;
+        }
     });
 
     ///??????
@@ -54,7 +81,33 @@ recognizeStream.on('data',function (data) {
   } else {
     console.log("--I dont know what to do---");
     
-    console.log("---please say: automation test , so that I can start----")
+    console.log("---please say: automation test , so that I can start----");
+    var synthesizeParams = {
+      text: '---please say: automation test , so that I can start----',
+      accept: 'audio/wav',
+      voice: 'en-US_AllisonVoice'
+    };
+    textToSpeech
+  .synthesize(synthesizeParams, function(err, audio) {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    textToSpeech.repairWavHeader(audio);
+    //fs.writeFileSync('audio.wav', audio);
+    //fs.createReadStream('audio.wav').pipe(reader);
+
+    var s = new Readable;
+    s.push(audio);
+    s.push(null);
+    s.pipe(reader);
+
+    //audio.pipe(reader);
+    console.log(typeof(audio));
+    console.log('audio.wav written with a corrected wav header');
+});
+
+
   }
 
 

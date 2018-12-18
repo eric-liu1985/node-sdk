@@ -2,25 +2,38 @@
 
 const fs = require('fs');
 const TextToSpeechV1 = require('watson-developer-cloud/text-to-speech/v1');
+var Speaker = require('speaker');
+var wav = require('wav');
+var Readable = require('stream').Readable;
+
 
 const textToSpeech = new TextToSpeechV1({
-  // if left unspecified here, the SDK will fall back to the TEXT_TO_SPEECH_USERNAME and TEXT_TO_SPEECH_PASSWORD
-  // environment properties, and then IBM Cloud's VCAP_SERVICES environment property
-  // username: 'INSERT YOUR USERNAME FOR THE SERVICE HERE',
-  // password: 'INSERT YOUR PASSWORD FOR THE SERVICE HERE'
+  iam_apikey: 'zu1Pj8wHVbclu-qGne4TucyZSv7HYzpQ96JP7lRtyfMt',
+  url: 'https://gateway-tok.watsonplatform.net/text-to-speech/api'
 });
 
 // specify the text to synthesize
 const params = {
   text: 'Hello, world.',
   accept: 'audio/ogg;codecs=opus',
+  //accept: 'audio/wav',
+  //voice: 'en-US_AllisonVoice'
 };
+
+var reader = new wav.Reader();
+
+// the "format" event gets emitted at the end of the WAVE header
+reader.on('format', function(format) {
+  // the WAVE header is stripped from the output of the reader
+  reader.pipe(new Speaker(format));
+});
 
 // synthesizeUsingWebSocket returns a Readable Stream that can be piped or listened to
 const synthesizeStream = textToSpeech.synthesizeUsingWebSocket(params);
 
 // the output of the stream can be piped to any writable stream, like an audio file
-synthesizeStream.pipe(fs.createWriteStream('./speech.ogg'));
+//synthesizeStream.pipe(fs.createWriteStream('./speech.ogg'));
+synthesizeStream.pipe(reader);
 
 // if the stream is not being piped anywhere and is only being listened to, the stream needs
 //   to be explicitly set to flowing mode:
